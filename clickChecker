@@ -1,0 +1,55 @@
+var targetNode = document.querySelector('iframe.extension-view__iframe').contentWindow.document.querySelector('iframe[src*="ext-twitch.tv"]').contentWindow.document.querySelector('div#chests');
+var config = { attributes: true, childList: true };
+ 
+var catchPercentage = 80;
+var catchMode = false;
+ 
+function zeroPad(num, numZeros) {
+    var n = Math.abs(num);
+    var zeros = Math.max(0, numZeros - Math.floor(n).toString().length );
+    var zeroString = Math.pow(10,zeros).toString().substr(1);
+    if( num < 0 ) {
+        zeroString = '-' + zeroString;
+    }
+    return zeroString+n;
+}
+ 
+function getCurrentTime() {
+    var today = new Date();
+    return zeroPad(today.getHours(), 2) + ":" + zeroPad(today.getMinutes(), 2) + ":" + zeroPad(today.getSeconds(), 2);
+}
+ 
+var callback = function(mutationsList) {
+    for(var mutation of mutationsList) {
+        if (mutation.type == 'childList') {
+            if (mutation.addedNodes.length > 0) {
+                if (mutation.previousSibling.tagName === undefined) {
+                    console.log('[' + getCurrentTime() + '] a wild chest appeared');
+                    var roll = Math.floor(Math.random() * 100);
+                    console.log('[' + getCurrentTime() + '] we rolled a ' + roll + ' out of 100');
+                    if (roll <= catchPercentage) {
+                        catchMode = true;
+                        console.log('[' + getCurrentTime() + '] we are trying to catch the wild chest');
+                        (function(i) {
+                            setTimeout(function () {
+                                targetNode.querySelector('video').click();
+                            }, Math.floor(Math.random() * 15000));
+                        })(i);
+                    } else {
+                        console.log('[' + getCurrentTime() + '] we won\'t try to catch the wild chest');
+                    }
+                } else {
+                    if (catchMode === true) {
+                        console.log('[' + getCurrentTime() + '] wild chest claimed');
+                        catchMode = false;
+                    } else {
+                        console.log('[' + getCurrentTime() + '] the wild chest escaped, too bad...');
+                    }
+                }
+            }
+        }
+    }
+};
+ 
+var observer = new MutationObserver(callback);
+observer.observe(targetNode, config);

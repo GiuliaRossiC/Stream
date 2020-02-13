@@ -1,0 +1,23 @@
+var targetNode = document.querySelector('iframe.extension-view__iframe').contentWindow.document.querySelector('iframe[src*="ext-twitch.tv"]').contentWindow.document.querySelector('div#chests');
+var config = { attributes: true, childList: true };
+
+var callback = function(mutationsList) {
+    for(var mutation of mutationsList) {
+        if (mutation.type == 'childList') {
+            if (mutation.addedNodes.length > 0) {
+                var today = new Date();
+                var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+                if (mutation.previousSibling.tagName === undefined) {                           console.log('[' + time + '] a wild chest appeared');
+            console.log(mutation.addedNodes[0]);
+            mutation.addedNodes[0].click();
+                } else {
+                    console.log('[' + time + '] the wild chest escaped, too bad...');
+                }
+            }
+
+        }
+    }
+};
+
+var observer = new MutationObserver(callback);
+observer.observe(targetNode, config);
